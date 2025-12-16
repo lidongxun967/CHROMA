@@ -9,8 +9,6 @@ const generateRandomColor = (): Color => ({
   b: Math.floor(Math.random() * 256),
 })
 
-const INITIAL_TIME = 30 // 30 seconds total for a "Rush"
-
 // Helper to calculate score based on distance
 const calculateStats = (target: Color, current: Color) => {
   const maxDist = Math.sqrt(255**2 + 255**2 + 255**2)
@@ -48,7 +46,18 @@ const hexToRgb = (hex: string): Color | null => {
 function App() {
   const [gameState, setGameState] = useState<GameState>('MENU')
   const [score, setScore] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(INITIAL_TIME)
+
+  // Settings & Persistence
+  const [showSettings, setShowSettings] = useState(false)
+  const [blindMode, setBlindMode] = useState(() => {
+    return localStorage.getItem('rgb_rush_blind_mode') === 'true'
+  })
+  const [timerDuration, setTimerDuration] = useState(() => {
+    const val = parseInt(localStorage.getItem('rgb_rush_timer_duration') || '30', 10)
+    return isNaN(val) ? 30 : val
+  })
+  
+  const [timeLeft, setTimeLeft] = useState(timerDuration)
   
   const [targetColor, setTargetColor] = useState<Color>({ r: 0, g: 0, b: 0 })
   const [userColor, setUserColor] = useState<Color>({ r: 0, g: 0, b: 0 })
@@ -59,11 +68,6 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null)
   const isResettingRef = useRef(true)
 
-  // Settings & Persistence
-  const [showSettings, setShowSettings] = useState(false)
-  const [blindMode, setBlindMode] = useState(() => {
-    return localStorage.getItem('rgb_rush_blind_mode') === 'true'
-  })
   const [highScore, setHighScore] = useState(() => {
     return parseInt(localStorage.getItem('rgb_rush_high_score') || '0', 10)
   })
@@ -72,6 +76,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('rgb_rush_blind_mode', String(blindMode))
   }, [blindMode])
+
+  useEffect(() => {
+    localStorage.setItem('rgb_rush_timer_duration', String(timerDuration))
+  }, [timerDuration])
 
   useEffect(() => {
     localStorage.setItem('rgb_rush_high_score', String(highScore))
@@ -120,7 +128,7 @@ function App() {
 
   const startGame = () => {
     setScore(0)
-    setTimeLeft(INITIAL_TIME)
+    setTimeLeft(timerDuration)
     setGameState('PLAYING')
     startNewRound()
   }
@@ -134,7 +142,7 @@ function App() {
       // Success: >90% match
       setScore(s => s + 1)
       setLastScore(`${percentage}%`)
-      setTimeLeft(INITIAL_TIME) // Reset timer
+      setTimeLeft(timerDuration) // Reset timer
     } else {
       // Failure: <=90% match
       setLastScore(`${percentage}%`)
@@ -148,7 +156,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (gameState === 'PLAYING' && timeLeft > 0) {
+    if (gameState === 'PLAYING' && timeLeft > 0 && timerDuration > 0) {
       const timer = setInterval(() => {
         setTimeLeft(t => {
           if (t <= 0) {
@@ -159,10 +167,10 @@ function App() {
         })
       }, 1000)
       return () => clearInterval(timer)
-    } else if (timeLeft <= 0 && gameState === 'PLAYING') {
+    } else if (timeLeft <= 0 && gameState === 'PLAYING' && timerDuration > 0) {
       setGameState('GAME_OVER')
     }
-  }, [gameState, timeLeft])
+  }, [gameState, timeLeft, timerDuration])
 
   const handleSliderChange = (channel: 'r' | 'g' | 'b', value: number) => {
     setUserColor(prev => ({ ...prev, [channel]: value }))
@@ -228,6 +236,38 @@ function App() {
                   <span className="slider-toggle"></span>
                 </label>
               </div>
+
+              <div className="setting-item">
+                <div className="setting-info">
+                  <span className="setting-label">Timer Duration</span>
+                  <span className="setting-desc">Seconds (0 = Off)</span>
+                </div>
+                <input 
+                  type="number" 
+                  min="0"
+                  max="600"
+                  value={timerDuration}
+                  onChange={(e) => {
+                    const val = Math.max(0, parseInt(e.target.value) || 0)
+                    setTimerDuration(val)
+                    if (gameState !== 'PLAYING') {
+                      setTimeLeft(val)
+                    } else if (val > 0 && timeLeft === 0) {
+                      setTimeLeft(val)
+                    }
+                  }}
+                  style={{ 
+                    background: '#333', 
+                    border: '1px solid #555', 
+                    color: '#fff', 
+                    padding: '0.5rem', 
+                    borderRadius: '4px',
+                    width: '80px',
+                    textAlign: 'center',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -262,19 +302,25 @@ function App() {
           <div className="stat-card timer-display">
              <span className="stat-label">TIME</span>
              <div className="circular-timer">
-                <svg viewBox="0 0 36 36" className="timer-svg">
-                  <path
-                    className="timer-bg"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="timer-progress"
-                    strokeDasharray={`${(timeLeft / INITIAL_TIME) * 100}, 100`}
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    style={{ stroke: timeLeft < 10 ? 'var(--danger-color)' : 'var(--accent-color)' }}
-                  />
-                </svg>
-                <span className="timer-text">{timeLeft}</span>
+                {timerDuration > 0 ? (
+                  <>
+                    <svg viewBox="0 0 36 36" className="timer-svg">
+                      <path
+                        className="timer-bg"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                      <path
+                        className="timer-progress"
+                        strokeDasharray={`${(timeLeft / timerDuration) * 100}, 100`}
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        style={{ stroke: timeLeft < 10 ? 'var(--danger-color)' : 'var(--accent-color)' }}
+                      />
+                    </svg>
+                    <span className="timer-text">{timeLeft}</span>
+                  </>
+                ) : (
+                   <span className="timer-text" style={{ fontSize: '2rem' }}>∞</span>
+                )}
              </div>
           </div>
         </div>
