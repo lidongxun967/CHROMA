@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import ColorAnalysis from './ColorAnalysis'
 
 type Color = { r: number; g: number; b: number }
 type GameState = 'MENU' | 'PLAYING' | 'GAME_OVER'
@@ -47,8 +48,25 @@ function App() {
   const [gameState, setGameState] = useState<GameState>('MENU')
   const [score, setScore] = useState(0)
 
+  const [tempThreshold, setTempThreshold] = useState('')
+
   // Settings & Persistence
   const [showSettings, setShowSettings] = useState(false)
+  
+  const handleOpenSettings = () => {
+    setTempThreshold(String(scoreThreshold))
+    setShowSettings(true)
+  }
+
+  const handleCloseSettings = () => {
+    const val = parseFloat(tempThreshold)
+    if (!isNaN(val) && val >= 50 && val <= 99.9) {
+      setScoreThreshold(val)
+    }
+    setShowSettings(false)
+  }
+
+  const [showAnalysis, setShowAnalysis] = useState(false)
   const [blindMode, setBlindMode] = useState(() => {
     return localStorage.getItem('chroma_blind_mode') === 'true'
   })
@@ -79,6 +97,8 @@ function App() {
   const [highScore, setHighScore] = useState(() => {
     return parseInt(localStorage.getItem('chroma_high_score') || '0', 10)
   })
+
+  const [history, setHistory] = useState<{ target: Color; user: Color }[]>([])
 
   const [hasLostFocus, setHasLostFocus] = useState(false)
 
@@ -157,6 +177,7 @@ function App() {
 
   const startGame = () => {
     setScore(0)
+    setHistory([])
     setHasLostFocus(false)
     setTimeLeft(timerDuration)
     setGameState('PLAYING')
@@ -168,6 +189,9 @@ function App() {
 
     const { similarity, percentage } = calculateStats(targetColor, userColor)
     
+    // Record history
+    setHistory(prev => [...prev, { target: targetColor, user: userColor }])
+
     if (similarity > (scoreThreshold / 100)) {
       // Success: >Threshold match
       setScore(s => s + 1)
@@ -234,7 +258,7 @@ function App() {
           </div>
           <button 
              className="settings-btn"
-             onClick={() => setShowSettings(true)}
+             onClick={handleOpenSettings}
              title="设置"
            >
              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -245,11 +269,11 @@ function App() {
       </header>
 
       {showSettings && (
-        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+        <div className="modal-overlay" onClick={handleCloseSettings}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>设置</h2>
-              <button className="close-btn" onClick={() => setShowSettings(false)}>×</button>
+              <button className="close-btn" onClick={handleCloseSettings}>×</button>
             </div>
             <div className="modal-body">
               <div className="setting-item">
@@ -292,10 +316,17 @@ function App() {
                   min="50"
                   max="99"
                   step="0.1"
-                  value={scoreThreshold}
-                  onChange={(e) => {
-                    const val = Math.max(50, Math.min(99.9, parseFloat(e.target.value) || 90))
-                    setScoreThreshold(val)
+                  value={tempThreshold}
+                  onChange={(e) => setTempThreshold(e.target.value)}
+                  onBlur={() => {
+                     let val = parseFloat(tempThreshold)
+                     // If invalid, reset to current stored valid threshold
+                     if (isNaN(val) || val < 50 || val > 99.9) {
+                        setTempThreshold(String(scoreThreshold))
+                     } else {
+                        // If valid, format it nicely
+                        setTempThreshold(String(val))
+                     }
                   }}
                   style={{ 
                     background: '#333', 
@@ -341,6 +372,20 @@ function App() {
                   }}
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAnalysis && (
+        <div className="modal-overlay" onClick={() => setShowAnalysis(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>色彩分析</h2>
+              <button className="close-btn" onClick={() => setShowAnalysis(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <ColorAnalysis history={history} />
             </div>
           </div>
         </div>
@@ -506,6 +551,23 @@ function App() {
                       <div className="game-over-msg">
                         <p className="sub-text">游戏结束</p>
                         <p className="final-score">{score}</p>
+                        <button 
+                          className="analysis-btn"
+                          onClick={() => setShowAnalysis(true)}
+                          style={{
+                            marginTop: '1rem',
+                            background: '#000',
+                            border: '1px solid #333',
+                            color: '#fff',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '0.9rem',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          查看分析
+                        </button>
                       </div>
                     ) : (
                       <div className="start-msg">
