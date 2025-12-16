@@ -182,7 +182,7 @@ function App() {
     // Small delay to show result then next round
     setTimeout(() => {
       startNewRound()
-    }, 800)
+    }, 1500)
   }
 
   useEffect(() => {
@@ -477,7 +477,27 @@ function App() {
                      style={{ backgroundColor: `rgb(${targetColor.r},${targetColor.g},${targetColor.b})` }}
                    >
                      <span className="half-label">目标</span>
-                     {lastScore !== null && <span className="feedback-float">{lastScore}</span>}
+                     {lastScore !== null && (
+                       <div style={{
+                         position: 'absolute',
+                         top: '50%',
+                         left: '50%',
+                         transform: 'translate(-50%, -50%)',
+                         display: 'flex',
+                         flexDirection: 'column',
+                         alignItems: 'center',
+                         textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                         color: '#fff',
+                         zIndex: 10,
+                         width: '100%',
+                         textAlign: 'center'
+                       }}>
+                         <span style={{ fontSize: '2.5rem', fontWeight: '800', lineHeight: 1.2 }}>{lastScore}</span>
+                         <span style={{ fontSize: '1.2rem', fontFamily: 'monospace', opacity: 0.9, marginTop: '0.2rem' }}>
+                           {rgbToHex(targetColor.r, targetColor.g, targetColor.b)}
+                         </span>
+                       </div>
+                     )}
                    </div>
                  </>
                ) : (
