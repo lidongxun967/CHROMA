@@ -9,6 +9,7 @@
   --accent-color: #ffd60a;
   --danger-color: #ff453a;
   --success-color: #32d74b;
+  --blue-color: #0a84ff;
   
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.6);
@@ -384,7 +385,7 @@ h1 {
 
 .slider-header label.red { color: var(--danger-color); }
 .slider-header label.green { color: var(--success-color); }
-.slider-header label.blue { color: var(--accent-color); }
+.slider-header label.blue { color: var(--blue-color); }
 
 .modern-slider {
   appearance: none;
