@@ -56,6 +56,10 @@ function App() {
     const stored = localStorage.getItem('chroma_strict_mode')
     return stored === null ? true : stored === 'true'
   })
+  const [scoreThreshold, setScoreThreshold] = useState(() => {
+    const val = parseFloat(localStorage.getItem('chroma_score_threshold') || '90')
+    return isNaN(val) ? 90 : val
+  })
   const [timerDuration, setTimerDuration] = useState(() => {
     const val = parseInt(localStorage.getItem('chroma_timer_duration') || '30', 10)
     return isNaN(val) ? 30 : val
@@ -97,6 +101,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('chroma_strict_mode', String(strictMode))
   }, [strictMode])
+
+  useEffect(() => {
+    localStorage.setItem('chroma_score_threshold', String(scoreThreshold))
+  }, [scoreThreshold])
 
   useEffect(() => {
     localStorage.setItem('chroma_timer_duration', String(timerDuration))
@@ -160,13 +168,13 @@ function App() {
 
     const { similarity, percentage } = calculateStats(targetColor, userColor)
     
-    if (similarity > 0.9) {
-      // Success: >90% match
+    if (similarity > (scoreThreshold / 100)) {
+      // Success: >Threshold match
       setScore(s => s + 1)
       setLastScore(`${percentage}%`)
       setTimeLeft(timerDuration) // Reset timer
     } else {
-      // Failure: <=90% match
+      // Failure
       setLastScore(`${percentage}%`)
       // No score added, no timer reset
     }
@@ -272,6 +280,34 @@ function App() {
                   />
                   <span className="slider-toggle"></span>
                 </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-info">
+                  <span className="setting-label">合格阈值</span>
+                  <span className="setting-desc">得分判定百分比 (%)</span>
+                </div>
+                <input 
+                  type="number" 
+                  min="50"
+                  max="99"
+                  step="0.1"
+                  value={scoreThreshold}
+                  onChange={(e) => {
+                    const val = Math.max(50, Math.min(99.9, parseFloat(e.target.value) || 90))
+                    setScoreThreshold(val)
+                  }}
+                  style={{ 
+                    background: '#333', 
+                    border: '1px solid #555', 
+                    color: '#fff', 
+                    padding: '0.5rem', 
+                    borderRadius: '4px',
+                    width: '80px',
+                    textAlign: 'center',
+                    fontSize: '1rem'
+                  }}
+                />
               </div>
 
               <div className="setting-item">
