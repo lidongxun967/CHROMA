@@ -1,3 +1,5 @@
 /dist
 /node_modules
 tsconfig.tsbuildinfo
+vite.config.js
+tsconfig.node.tsbuildinfo
