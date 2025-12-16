@@ -50,10 +50,10 @@ function App() {
   // Settings & Persistence
   const [showSettings, setShowSettings] = useState(false)
   const [blindMode, setBlindMode] = useState(() => {
-    return localStorage.getItem('rgb_rush_blind_mode') === 'true'
+    return localStorage.getItem('chroma_blind_mode') === 'true'
   })
   const [timerDuration, setTimerDuration] = useState(() => {
-    const val = parseInt(localStorage.getItem('rgb_rush_timer_duration') || '30', 10)
+    const val = parseInt(localStorage.getItem('chroma_timer_duration') || '30', 10)
     return isNaN(val) ? 30 : val
   })
   
@@ -69,20 +69,20 @@ function App() {
   const isResettingRef = useRef(true)
 
   const [highScore, setHighScore] = useState(() => {
-    return parseInt(localStorage.getItem('rgb_rush_high_score') || '0', 10)
+    return parseInt(localStorage.getItem('chroma_high_score') || '0', 10)
   })
 
   // Persist settings
   useEffect(() => {
-    localStorage.setItem('rgb_rush_blind_mode', String(blindMode))
+    localStorage.setItem('chroma_blind_mode', String(blindMode))
   }, [blindMode])
 
   useEffect(() => {
-    localStorage.setItem('rgb_rush_timer_duration', String(timerDuration))
+    localStorage.setItem('chroma_timer_duration', String(timerDuration))
   }, [timerDuration])
 
   useEffect(() => {
-    localStorage.setItem('rgb_rush_high_score', String(highScore))
+    localStorage.setItem('chroma_high_score', String(highScore))
   }, [highScore])
 
   // Update high score in real-time
