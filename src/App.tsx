@@ -66,6 +66,13 @@ function App() {
     setShowSettings(false)
   }
 
+  const handleResetHighScore = () => {
+    if (window.confirm('确定要重置最高分吗？此操作无法撤销。')) {
+      setHighScore(0)
+      localStorage.setItem('chroma_high_score', '0')
+    }
+  }
+
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [blindMode, setBlindMode] = useState(() => {
     return localStorage.getItem('chroma_blind_mode') === 'true'
@@ -371,6 +378,27 @@ function App() {
                     fontSize: '1rem'
                   }}
                 />
+              </div>
+
+              <div className="setting-item" style={{ borderTop: '1px solid #444', marginTop: '1rem', paddingTop: '1rem' }}>
+                <div className="setting-info">
+                  <span className="setting-label">数据管理</span>
+                  <span className="setting-desc">清除所有记录</span>
+                </div>
+                <button 
+                  onClick={handleResetHighScore}
+                  style={{
+                    background: '#ff4444',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  重置最高分
+                </button>
               </div>
             </div>
           </div>
