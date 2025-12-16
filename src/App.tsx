@@ -488,7 +488,7 @@ function App() {
           <div className="sliders-section">
             <div className="slider-group">
               <div className="slider-header">
-                <label className="red">红</label>
+                <label className="red">R</label>
               </div>
               <input 
                 type="range" min="0" max="255" 
@@ -501,7 +501,7 @@ function App() {
             
             <div className="slider-group">
               <div className="slider-header">
-                <label className="green">绿</label>
+                <label className="green">G</label>
               </div>
               <input 
                 type="range" min="0" max="255" 
@@ -514,7 +514,7 @@ function App() {
 
             <div className="slider-group">
               <div className="slider-header">
-                <label className="blue">蓝</label>
+                <label className="blue">B</label>
               </div>
               <input 
                 type="range" min="0" max="255" 
