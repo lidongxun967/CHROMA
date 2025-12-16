@@ -39,14 +39,22 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({ history }) => {
   };
 
   // Convert error to accuracy score (0-100)
-  // 0 error = 100 score
-  // 255 error = 0 score
-  const getScore = (error: number) => Math.max(0, 100 - (error / 255) * 100);
+  // Optimize: Use sharper curve to highlight weaknesses
+  // Base 180: Any error > 180 is 0 score (stricter than 255)
+  // Power 4: Rapidly decays score as error increases
+  // Error 5  -> ~89 (Excellent)
+  // Error 10 -> ~79 (Good)
+  // Error 20 -> ~62 (Passable)
+  // Error 30 -> ~48 (Weak)
+  const getScore = (error: number) => {
+    const normalized = Math.min(1, error / 180);
+    return Math.max(0, Math.pow(1 - normalized, 4) * 100);
+  };
 
   const data = [
-    { subject: 'Red', score: getScore(avgError.r), fullMark: 100 },
-    { subject: 'Green', score: getScore(avgError.g), fullMark: 100 },
-    { subject: 'Blue', score: getScore(avgError.b), fullMark: 100 },
+    { subject: '红 (R)', score: getScore(avgError.r), fullMark: 100 },
+    { subject: '绿 (G)', score: getScore(avgError.g), fullMark: 100 },
+    { subject: '蓝 (B)', score: getScore(avgError.b), fullMark: 100 },
   ];
 
   return (
