@@ -252,6 +252,12 @@ function App() {
     }
   }
 
+  const handleEndGame = () => {
+    if (gameState === 'PLAYING') {
+      setGameState('GAME_OVER')
+    }
+  }
+
   return (
     <div className="app-container">
       <header className="game-header">
@@ -520,7 +526,7 @@ function App() {
             </div>
           </div>
 
-          <div className="action-section">
+          <div className="action-section" style={{ display: 'flex', gap: '1rem', alignItems: 'center', position: 'relative' }}>
             <button 
               className="submit-fab" 
               onClick={gameState === 'MENU' || gameState === 'GAME_OVER' ? startGame : handleSubmit}
@@ -531,6 +537,36 @@ function App() {
                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
               )}
             </button>
+            
+            {gameState === 'PLAYING' && (
+              <button 
+                className="end-game-btn"
+                onClick={handleEndGame}
+                title="提前结算"
+                style={{
+                  position: 'absolute',
+                  top: '110%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: '#333',
+                  border: '1px solid #555',
+                  color: '#aaa',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  zIndex: 10
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12" rx="2" />
+                </svg>
+              </button>
+            )}
           </div>
 
           <div className="preview-section">
