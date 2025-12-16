@@ -52,6 +52,10 @@ function App() {
   const [blindMode, setBlindMode] = useState(() => {
     return localStorage.getItem('chroma_blind_mode') === 'true'
   })
+  const [strictMode, setStrictMode] = useState(() => {
+    const stored = localStorage.getItem('chroma_strict_mode')
+    return stored === null ? true : stored === 'true'
+  })
   const [timerDuration, setTimerDuration] = useState(() => {
     const val = parseInt(localStorage.getItem('chroma_timer_duration') || '30', 10)
     return isNaN(val) ? 30 : val
@@ -72,10 +76,27 @@ function App() {
     return parseInt(localStorage.getItem('chroma_high_score') || '0', 10)
   })
 
+  const [hasLostFocus, setHasLostFocus] = useState(false)
+
+  // Monitor window focus
+  useEffect(() => {
+    const handleBlur = () => {
+      if (gameState === 'PLAYING') {
+        setHasLostFocus(true)
+      }
+    }
+    window.addEventListener('blur', handleBlur)
+    return () => window.removeEventListener('blur', handleBlur)
+  }, [gameState])
+
   // Persist settings
   useEffect(() => {
     localStorage.setItem('chroma_blind_mode', String(blindMode))
   }, [blindMode])
+
+  useEffect(() => {
+    localStorage.setItem('chroma_strict_mode', String(strictMode))
+  }, [strictMode])
 
   useEffect(() => {
     localStorage.setItem('chroma_timer_duration', String(timerDuration))
@@ -87,10 +108,10 @@ function App() {
 
   // Update high score in real-time
   useEffect(() => {
-    if (score > highScore) {
+    if (score > highScore && (!hasLostFocus || !strictMode)) {
       setHighScore(score)
     }
-  }, [score, highScore])
+  }, [score, highScore, hasLostFocus, strictMode])
 
   // Feedback animation state
   const [lastScore, setLastScore] = useState<number | string | null>(null)
@@ -128,6 +149,7 @@ function App() {
 
   const startGame = () => {
     setScore(0)
+    setHasLostFocus(false)
     setTimeLeft(timerDuration)
     setGameState('PLAYING')
     startNewRound()
@@ -239,6 +261,21 @@ function App() {
 
               <div className="setting-item">
                 <div className="setting-info">
+                  <span className="setting-label">严格模式</span>
+                  <span className="setting-desc">失焦时不计分</span>
+                </div>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    checked={strictMode}
+                    onChange={(e) => setStrictMode(e.target.checked)}
+                  />
+                  <span className="slider-toggle"></span>
+                </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-info">
                   <span className="setting-label">倒计时时长</span>
                   <span className="setting-desc">秒 (0 = 关闭)</span>
                 </div>
@@ -296,7 +333,13 @@ function App() {
           
           <div className="stat-card score-display">
             <span className="stat-label">得分</span>
-            <div className="stat-value">{score.toString().padStart(5, '0')}</div>
+            <div 
+              className="stat-value"
+              style={{ color: (hasLostFocus && strictMode) ? '#ff4444' : undefined }}
+              title={(hasLostFocus && strictMode) ? '失去焦点，分数无效' : undefined}
+            >
+              {score.toString().padStart(5, '0')}
+            </div>
           </div>
 
           <div className="stat-card timer-display">
