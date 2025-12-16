@@ -113,9 +113,9 @@ function App() {
     setHexInputValue('#')
     setLastScore(null)
     // Focus input for next round
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
+    // setTimeout(() => {
+    //   inputRef.current?.focus()
+    // }, 0)
   }, [])
 
   const startGame = () => {
