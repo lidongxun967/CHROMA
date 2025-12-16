@@ -1,0 +1,22 @@
+.hex-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: center;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.hex-input:focus {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-color);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
